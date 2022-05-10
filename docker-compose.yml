@@ -1,0 +1,61 @@
+version: '3'
+
+services:
+    proxy:
+        container_name: proxy
+        image: 'nginx:alpine'
+        ports:
+            - 8000:80
+        networks:
+            envnet:
+                ipv4_address: 10.16.0.80
+        volumes:
+            - ./config/nginx/conf.d:/etc/nginx/conf.d:ro
+            - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+            - ./data/www:/usr/share/nginx/html/www:ro
+        extra_hosts:
+            php72: "10.16.0.100"
+            php74: "10.16.0.102"
+            php56: "10.16.0.101"
+            php8: "10.16.0.107"
+    php56:
+        container_name: php56
+        build: ./php56
+        networks:
+            envnet:
+                ipv4_address: 10.16.0.101
+        volumes:
+          - ./data/www:/var/www/html
+    php72:
+        container_name: php72
+        build: ./php72
+        networks:
+            envnet:
+                ipv4_address: 10.16.0.100
+        volumes:
+          - ./data/www:/var/www/html
+        extra_hosts:
+            mariadb: "10.16.0.10"
+    php74:
+        container_name: php74
+        build: ./php74
+        networks:
+            envnet:
+                ipv4_address: 10.16.0.102
+        volumes:
+          - ./data/www:/var/www/html
+    php8:
+        container_name: php8
+        build: ./php8
+        networks:
+            envnet:
+                ipv4_address: 10.16.0.107
+        volumes:
+          - ./data/www:/var/www/html
+networks:
+    envnet:
+        driver: bridge
+        ipam:
+            config:
+                - subnet: 10.16.0.0/24
+                  gateway: 10.16.0.1
